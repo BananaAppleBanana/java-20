@@ -1,7 +1,11 @@
 package com.example.java20.week3;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * Day1:
@@ -255,35 +259,154 @@ class SynchronizedBlock {
  * How to solve deadlock
  *
  * ***********************************************************************
+ * generic
+ */
+class GenericTest {
+    public static void main(String[] args) {
+        Set set = new HashSet<>();
+        set.add("aa");
+        String res = get("abc");
+    }
+
+    public static <E> E get(E e) {
+        return e;
+    }
+}
+/**
+ * comparator vs comparable
+ */
+class CompareExample {
+    private static class Student implements Comparable{
+        int id;
+
+        public Student(int id) {
+            this.id = id;
+        }
+
+        @Override
+        public String toString() {
+            return "Student{" +
+                    "id=" + id +
+                    '}';
+        }
+
+        @Override
+        public int compareTo(Object o) {
+            return id - ((Student)o).id;
+        }
+    }
+
+    public static void main(String[] args) {
+//        Map<Student, Integer> m = new TreeMap<>((s1, s2) -> s1.id - s2.id);
+        Map<Student, Integer> m = new TreeMap<>();
+        m.put(new Student(1), 1);
+        m.put(new Student(2), 10);
+        System.out.println(m);
+    }
+}
+/**
  * What is threadPool? Why we need it
  * Executor vs ExecutorService vs Executors
  * Difference between callable and runnable
  * What is forkJoinPool, how it works?
  * What type of threadpool you know
- *
+ * What is CompletableFuture, what advantage does it provide us
+ */
+class CFExample {
+    private static final ExecutorService pool = Executors.newCachedThreadPool();;
+
+    public static void main(String[] args) {
+        int res = executeTask();
+        System.out.println(res);
+    }
+
+    public static int executeTask() {
+        List<CompletableFuture<Integer>> list = new ArrayList<>();
+        for(int i = 0; i < 100; i++) {
+            final int tmp = i;
+            list.add(CompletableFuture.supplyAsync(() -> tmp, pool)
+                    .thenApplyAsync(x -> {
+                        try {
+                            System.out.println(Thread.currentThread());
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        return x * 2;
+                    }));
+        }
+        CompletableFuture[] cfArr = list.toArray(new CompletableFuture[0]);
+        return CompletableFuture.allOf(cfArr)
+                .thenApply(Void -> list.stream().map(cf -> cf.join()).reduce(0, (x, y) -> x + y))
+                .orTimeout(6, TimeUnit.SECONDS)
+                .join();
+    }
+}
+
+/**
  * Day 5
  * What is functional interface
+ */
+class ParentA {
+    public void get() {}
+}
+class ParentB extends ParentA {
+    @Override
+    public void get() {}
+}
+
+/**
  * What functional interface you know
  * What is lambda expression
+ */
+class LambdaExpression {
+    public static void main(String[] args) {
+        TreeSet<Integer> set = new TreeSet<>((v1, v2) -> v1 - v2);
+    }
+}
+/**
  * How we use it
- * What is stream API
+ * What is stream API / Why stream API
+ */
+class StreamAPIExample {
+    public static void main(String[] args) {
+        Arrays.asList(1, 2, 3, 4, 2, 2, 2)
+                .stream()
+                .map(x -> x + 3)        //reference pipeline 1
+                .distinct()
+                .sorted()
+//                .map(s -> String.valueOf(s)) //reference pipeline 2
+//                .filter(s -> s.startsWith("5")) //reference pipeline 3
+                .forEach(System.out::println); //terminal operation => generate iterator -> sink1 -> sink2 -> sink3 -> final sink
+    }
+}
+/**
  * Can you write a stream api to filter a list of student have age>30
  * Use stream api to counting frequency
  * What is Optional
  * How does parallel stream worked
- * What is CompletableFuture, what advantage does it provide us
- *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * Day 6
  * What is database, different type of database
  * What database do you know
  *
  * Write sql queries
  * Select, from, where, order by, aggregation function
+ *
  * Rank dense_rank
  * Union, intersect, minus,
  * Inner join, left join, right join, full join, cross join
+ *      join  ... on ..
+ *        ,
  * Group by, having
  *
+ * select *
+ * from A join B on A.id = B.a_id
+ *
+ * select *
+ * from A, B
+ * where A.id = B.a_id
+ * * * * * * * * * * * * * * * *
  * Day 7
  * What is transaction
  * What is ACID
@@ -296,12 +419,42 @@ class SynchronizedBlock {
  * How does rdbms do index (B tree, B+tree)
  * Why we need to create index
  * Execution plan (tuning database)
+ *      merge join => merge two sorted array
+ *      nested loop join =>
+ *          for(...) {
+ *              for(..) {
+ *
+ *              }
+ *          }
+ *     hash join => [row1, row5, row10][][][][][row2, row3][][] buckets
  * Table design :1-1, 1-m, m-m
  * 1st, 2nd, 3rd normalization
  *
+ *                                          client
+ *                                             |
+ *    disk                  [Private sql area1] connection1 : session / query status / merge, sort, group by ...
+ *                          [Private sql area2] connection2
+ *                          [Private sql area3] connection3
+ *                                            |
+ *    disk                  [global shared area]
+ *                                  first part
+ *                                  1. data dictionary : table info / column info / privilege info
+ *                                  2. ..  : execution plan
+ *                                  3. result cache area :
+ *
+ *                                  2nd parts
+ *    disk                          1. shared area : blocks : index + cache part of table / rows
+ *                                  2. undo area : transaction
+ *                                  3. redo area : insert, update , delete ...
  *
  *
  *
+ *  Bitmap index
+ *
+ *  homework
+ *  1. push code to github -> private -> banana apple..
+ *  2. write the read me
+ *  3. deadline is tomorrow 10amCDT
  * ***********
  * Java section
  * Java design patterns
