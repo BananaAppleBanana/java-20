@@ -412,8 +412,83 @@ class StreamAPIExample {
  * What is ACID
  * Four isolation levels
  * Each isolation level has what problem? (dirty read, unrepeatable read, phantom read)
- * What is share lock, exclusive lock
+ *      MVCC
+ *
+ *      id,  name,  (row_id, tx_id, rollback pointer)
+ *       1    'Tom'    xxx       1       null
+ *                                   |
+ *   1    'Jerry'  mmm       2       |
+ *
+ *      tx_id = 3
+ *      select -> read view (committed tx_id)   [1]
+ *             -> compare tx_id of rows
+ *
+ *
+ * What is share lock, (select.. for share)
+ *      exclusive lock(update, delete, insert, select..for update)
+ *
+ *      id
+ *      (-infinite, 1)
+ *      1   ex
+ *      2   ex
+ *      (2, 10)
+ *      10  ex
+ *      (10, +infinite)
+ *
  * What is optimistic lock
+ *
+ *          user1/thread1           user2/thread2
+ *           read val = 1               read val = 1
+ *           update val + 1 : 2           update val + 5 : 6
+ *                      |
+ *               time1   write
+ *               val : 2
+ *                                      |
+ *                                time2 write
+ *                    file / value / data / database
+ *
+ *
+ *
+ *                   update table set salary = 101
+ *                   where id = 1 and name = Tom and address = IL and salary = 100
+ *
+ *              id,  name,  address, salary
+ *              1,   'Tom',   IL,     100  +1, + 10 => 111
+
+ *
+ *                   update table set salary = 101, version = 2
+ *                   where version = 1
+ *
+ *                      user1                           user2
+ *                  salary = 100                        salary = 100
+ *                  version = 1                         version = 1
+ *                      | + 1
+ *                  update
+ *                  salary = 101
+ *                  version = 2
+ *                                                          | + 10
+ *                                                  update salary = 110
+ *                                                  version = 2
+ *                                                  where current version = 1
+ *                                                          |
+ *                                                         get error message
+ *                                                         |
+ *                                                      retry / re-read
+ *                                                        |
+ *                                                    salary = 101
+ *                                                    version = 2
+ *                                                      | +10
+ *                                                    ...
+ *                                                    salary = 111
+ *                                                    version = 3
+ *
+ *              id,  name,  address, salary, version / timestamp
+ *              1,   'Tom',   IL,     111       3
+ *
+ *
+ *    java : Data
+ *             t1     t2     t3
+ *             A  ->  B  ->  A
  *
  * Day 8
  * How does rdbms do index (B tree, B+tree)
@@ -449,7 +524,54 @@ class StreamAPIExample {
  *
  *
  *
- *  Bitmap index
+ *  Bitmap index (for duplicate data)
+ *          table                   bitmap index
+ *    id, state   row_id  -   row_id   NJ   NY  IL
+ *    1,  NJ                            1   0   0
+ *    2,  NY                            0   1   0
+ *    3,  NJ                            1   0   0
+ *    4,  IL                            0   0   1
+ *
+ *     root
+ *    /     \
+ *  Female  Male
+ *   50%    50%
+ *
+ *   select
+ *   from
+ *   where state = NJ or state = NY
+ *  NJ : 1010
+ *      or
+ *  NY : 0100
+ *    =
+ *   1110
+ *
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *  clients input some random values -> your system should return true if this value exist in your application
+ *                                      [1, 300 million]
+ *     1. bitmap
+ *          101010101010 1 1
+ *          1 3 5 7 9 11 13 14
+ *       search(8) -> false
+ *       search(9) -> true
+ *       a. compress
+ *    2. cache (key, value)
+ *    3. database
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ *    IOT(oracle) / cluster index(other rdbms)
+ *          B+
+ *          root
+ *         /    \
+ *       leaf    leaf
+ *       rowid    rowid
+ *        id        id
+ *       name      name
+ *    *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
+ *    table partition
+ *    Jan       Feb         March
+ *    area1     area2       area3
+ *     *    *    *    *    *    *    *    *    *    *    *    *    *    *
+ *
  *
  *  homework
  *  1. push code to github -> private -> banana apple..
@@ -480,4 +602,6 @@ class StreamAPIExample {
  * jenkins pipeline
  * AWS services
  * AWS ECS + docker
+ *
+ * 2pm cdt
  */
