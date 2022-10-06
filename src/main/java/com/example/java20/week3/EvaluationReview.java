@@ -163,6 +163,18 @@ class TryCatchFinallyException {
  * Java memory model : what is heap and stack and their difference
  * GC work flow:
  * new Object() -> eden (full / after few gc) -> promote s1 / s0 -> promote old(when hit certain age or previous gens are full)
+ */
+/**
+ *  JVM errors
+ *  1. out of memory error
+ *  2. memory leak?
+ *
+ *  strong reference / soft reference / weak reference / phantom reference
+ *  int a
+ *  string b
+ */
+
+/**
  * How to create a new Thread, thread life cycle
  * What is volatile? Features that volatile provides. Is volatile itself secure thread safe or not?
  *  fence / barrier + happen rules
