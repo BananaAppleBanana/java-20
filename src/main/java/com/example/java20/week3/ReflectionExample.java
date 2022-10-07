@@ -1,8 +1,12 @@
 package com.example.java20.week3;
 
 import java.lang.annotation.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class ReflectionExample {
@@ -65,3 +69,106 @@ public class ReflectionExample {
  *
  *  deadline : tomorrow 10am CDT
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+@interface Component {}
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+@interface Inject{}
+
+interface A {
+    void print();
+}
+@Component
+class AImpl implements A {
+    @Override
+    public void print() {
+        System.out.println("this is A");
+    }
+}
+@Component
+class B {
+    @Inject
+    private A a;
+
+    public void print() {
+        a.print();
+    }
+}
+
+class Container {
+    private final Map<Class<?>, Object> map = new ConcurrentHashMap<>();
+
+    public List<Class<?>> scan() {
+        return Arrays.asList(AImpl.class, B.class);
+    }
+
+    public void doInject() throws Exception{
+//        List<Class<?>> classes = scan();
+//        for(Class<?> clazz: classes) {
+//            Annotation[] annotations = clazz.getDeclaredAnnotations();
+//            for(Annotation annotation: annotations) {
+//                if(annotation.annotationType() == Component.class) {
+//                    Constructor constructor = clazz.getDeclaredConstructor();
+//                    Object instance = constructor.newInstance();
+//                    map.put(clazz, instance);
+//                }
+//            }
+//        }
+        Class<?> aClass = AImpl.class;
+        A instanceA = (A)aClass.getDeclaredConstructor().newInstance();
+        A a = (A) Proxy.newProxyInstance(
+                Container.class.getClassLoader(),
+                aClass.getInterfaces(),
+                new AInvocationHandler(instanceA)
+        );
+        map.put(aClass.getInterfaces()[0], a);
+
+        Class<?> bClass = B.class;
+        B instanceB = (B)bClass.getDeclaredConstructor().newInstance();
+        for(Field field: bClass.getDeclaredFields()) {
+            field.setAccessible(true);
+            if(map.containsKey(field.getType())) {
+                Object obj = map.get(field.getType());
+                field.set(instanceB, obj);
+            }
+        }
+        map.put(bClass, instanceB);
+    }
+
+    public void print() {
+        ((B) map.get(B.class)).print();
+    }
+
+    public static void main(String[] args) throws Exception{
+        Container c = new Container();
+        c.doInject();
+        c.print();
+    }
+}
+
+class AInvocationHandler implements InvocationHandler {
+    private final A a;
+
+    public AInvocationHandler(A a) {
+        this.a = a;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("before");
+        Object res = method.invoke(a, args);
+        System.out.println("after");
+        return res;
+    }
+}
+
+
+//class ComputeTest {
+//    public static void main(String[] args) {
+//        Map<Integer, Integer> m = new ConcurrentHashMap<>();
+//        m.compute(5, (k, v) -> v == null ? 1: v + 1);
+//        System.out.println(m);
+//    }
+//}
+
