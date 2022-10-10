@@ -1,5 +1,8 @@
 package com.example.java20.week3;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.sql.*;
 
 
@@ -128,4 +131,71 @@ public class JdbcExample {
             }//end finally try
         }//end try
     }//end main
+}
+
+class ReflectionDemo {
+    @SuppressWarnings("unchecked")
+    public static <T> T withMapInvocationHandler(Object target, Class<T> itf) {
+        return (T) Proxy.newProxyInstance(
+                itf.getClassLoader(),
+                new Class<?>[]{itf},
+                new MapInvocationHandler(target)
+        );
+    }
+
+    public static void main(String[] args) {
+        Animal animal = withMapInvocationHandler(new Cat(), Animal.class);
+        animal.eat();
+    }
+}
+
+interface Animal{
+    void eat();
+    void sleep();
+}
+
+/**
+ * Cat class implement Animal interface
+ */
+class Cat implements Animal {
+
+    private String name = "Tom";
+    private String getPrivate(){
+        return "Can you get me? It's private";
+    }
+    @Override
+    public void eat() {
+        System.out.println("Eating time, meow!");
+
+    }
+    @Override
+    public void sleep() {
+        System.out.println("Sleeping time, zZzZZZ");
+    }
+}
+
+class AnimalHouse {
+    private Animal animal;
+
+    public void eat() {
+        animal.eat();
+    }
+}
+/*
+    map [proxyAnimal, AnimalHouse[proxyAnimal reference]]
+ */
+class MapInvocationHandler implements InvocationHandler {
+
+    private final Object target;
+
+    public MapInvocationHandler(Object target){
+        this.target = target;
+    }
+
+    @Override
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("proxy");
+        return method.invoke(target, args);
+
+    }
 }
