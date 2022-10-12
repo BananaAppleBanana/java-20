@@ -122,12 +122,11 @@ public class ORMConfig {
         PersistenceUnitUtil unitUtil = entityManagerFactory.getPersistenceUnitUtil();
         //..
 
-//        List<Student> students = em.createQuery("select s from Student s join fetch s.teacher_students").getResultList();
-//        Student s = students.get(0);
-//        System.out.println("collection is loaded : " + unitUtil.isLoaded(s, "teacher_students"));
-//        int size = s.getTeacher_students().size();
-//        System.out.println("collection is loaded : " + unitUtil.isLoaded(s, "teacher_students"));
-        addToJunctionTable1(em);
+        em.getTransaction().begin();
+        Student s = new Student();
+        s.setName("32th");
+        em.persist(s);
+        em.flush();
     }
 
 
