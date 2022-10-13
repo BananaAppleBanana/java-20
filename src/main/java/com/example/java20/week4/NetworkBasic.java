@@ -1,5 +1,8 @@
 package com.example.java20.week4;
 
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
 /**
  *    1. what are OSI layers , explain each layer
  *    2. what happened after clicking url

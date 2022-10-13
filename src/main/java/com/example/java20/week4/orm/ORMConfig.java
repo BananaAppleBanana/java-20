@@ -113,7 +113,7 @@ public class ORMConfig {
         return em.getObject();
     }
 
-    public static void main(String[] args) throws Exception{
+    public static void main(String[] args) {
         ORMConfig ormConfig = new ORMConfig();
         DataSource dataSource = ormConfig.getDataSource();
         Properties properties = ormConfig.getProperties();
@@ -122,11 +122,11 @@ public class ORMConfig {
         PersistenceUnitUtil unitUtil = entityManagerFactory.getPersistenceUnitUtil();
         //..
 
-        em.getTransaction().begin();
+//        em.getTransaction().begin();
         Student s = new Student();
         s.setName("32th");
         em.persist(s);
-        em.flush();
+//        em.flush();
     }
 
 
