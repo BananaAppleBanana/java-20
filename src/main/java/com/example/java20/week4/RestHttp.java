@@ -72,4 +72,25 @@ package com.example.java20.week4;
  *                                      Json
  *
  *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *
+ *
+ *    client -> request -> server   -> fetch data -> server
+ *
+ *    RestTemplate
+ *
+ *    1. create configuration class in config package
+ *      @Configure
+ *      public class RestTemplateConfig {
+ *          @Bean
+ *          public RestTemplate restTemplate() {
+ *              return new RestTemplate();
+ *          }
+ *      }
+ *    2. inject rest template into service
+ *      xx.getForObject(url, Class type)
+ *    3. param
+ *   //TODO
+ *    1. first api
+ *       get all employees and group them by age
+ *    2. second api
+ *       get employees whose age larger than 30
  */
