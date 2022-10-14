@@ -89,8 +89,13 @@ package com.example.java20.week4;
  *      xx.getForObject(url, Class type)
  *    3. param
  *   //TODO
+ *    https://dummy.restapiexample.com/api/v1/employees
  *    1. first api
  *       get all employees and group them by age
  *    2. second api
  *       get employees whose age larger than 30
+ *
+ *    packages
+ *    interface
+ *    exception handling
  */
