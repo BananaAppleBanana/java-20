@@ -73,7 +73,7 @@ package com.example.java20.week4;
  *
  *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *
  *
- *    client -> request -> server   -> fetch data -> server
+ *    client -> request -> server   ->  request -> server
  *
  *    RestTemplate
  *
