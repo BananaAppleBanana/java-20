@@ -122,11 +122,11 @@ public class ORMConfig {
         PersistenceUnitUtil unitUtil = entityManagerFactory.getPersistenceUnitUtil();
         //..
 
-//        em.getTransaction().begin();
+        em.getTransaction().begin();
         Student s = new Student();
         s.setName("32th");
         em.persist(s);
-//        em.flush();
+        em.flush();
     }
 
 
