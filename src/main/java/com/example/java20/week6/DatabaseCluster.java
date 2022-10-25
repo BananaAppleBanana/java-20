@@ -1,5 +1,7 @@
 package com.example.java20.week6;
 
+import java.util.Arrays;
+
 /**
  *  1. how to scale up database
  *      RDBMS
