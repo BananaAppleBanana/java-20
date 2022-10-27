@@ -82,18 +82,16 @@ package com.example.java20.week5;
  *
  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *
  *   Git branch strategy
- *      master branch ---------------v1.0.0
+ *      master branch ---------------v1.0.0 (production)
  *                      \  /          /
  *      hotfix branch    --          /
  *                         \        /
- *      release branch -------v1.0.0---------v1.1.0---------v1.2.0
+ *      release branch -------v1.0.0---------v1.1.0---------v1.2.0   (UAT)
  *
  *                                                            /
- *      development branch ----------------------------------
+ *      development branch ----------------------------------       (QA)
  *                                  \         / pull request code review
- *      feature branch               --------
- *
- *
+ *      feature branch               --------   (local laptop)
  *
  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *  *
  *      Next Monday
